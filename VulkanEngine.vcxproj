@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="VulkanEngine\Source\Core\Renderer.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\GraphicPipeline.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\Shader.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\SwapChain.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="VulkanEngine\Include\Core\Renderer.h" />
     <ClInclude Include="VulkanEngine\Include\Core\GraphicPipeline.h" />
     <ClInclude Include="VulkanEngine\Include\Core\Shader.h" />
     <ClInclude Include="VulkanEngine\Include\Core\SwapChain.h" />

@@ -13,6 +13,7 @@ public:
     void setVertexShader(Shader* vertexShader);
     void setFragmentShader(Shader* fragmentShader);
     void createRenderPass();
+    void cleanUp();
     VkPipelineLayout getLayout();
     VkPipeline getGraphicPipeline();
     VkRenderPass getRenderPass();

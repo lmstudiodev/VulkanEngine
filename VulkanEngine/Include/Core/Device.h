@@ -19,8 +19,14 @@ public:
 	VkDevice getDevice();
 	VkQueue getGraphicQueue();
 	VkQueue getPresentationQueue();
+	VkCommandBuffer getCommandBuffer();
 	SwapChainSupportDetails getSwapchainSupport();
 	QueueFamilyIndices getQueueFamilyIndices();
+	void createCommandPool();
+	void createCommandBuffer();
+	void cleanUp();
+	void destroyCommandPool();
+	void resetCommandBuffer();
 
 private:
 	void pickPhysicalDevice(VkInstance& instance);
@@ -38,6 +44,8 @@ private:
 	VkQueue m_presentQueue;
 	QueueFamilyIndices m_queueFamilyIndices;
 	SwapChainSupportDetails m_swapChainSupport;
+	VkCommandPool m_commandPool;
+	VkCommandBuffer m_commandBuffer;
 
 	Game* m_game = nullptr;
 

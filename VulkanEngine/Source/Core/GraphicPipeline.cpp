@@ -14,6 +14,21 @@ GraphicPipeline::~GraphicPipeline()
         VKINFO("GraphicPipeline class released");
 }
 
+void GraphicPipeline::cleanUp()
+{
+    vkDestroyPipeline(m_game->m_device->getDevice(), m_graphicsPipeline, nullptr);
+    if (m_debugMode)
+        VKINFO("Pipeline destroyed");
+
+    vkDestroyPipelineLayout(m_game->m_device->getDevice(), m_pipelineLayout, nullptr);
+    if (m_debugMode)
+        VKINFO("Pipeline layout destroyed");
+
+    vkDestroyRenderPass(m_game->m_device->getDevice(), m_renderPass, nullptr);
+    if (m_debugMode)
+        VKINFO("Render pass destroyed");
+}
+
 void GraphicPipeline::init()
 {
     VkPipelineShaderStageCreateInfo shaderStages[] = { m_vertShaderStageInfo, m_fragShaderStageInfo };
@@ -21,9 +36,9 @@ void GraphicPipeline::init()
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
+    vertexInputInfo.pVertexBindingDescriptions = nullptr;
     vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+    vertexInputInfo.pVertexAttributeDescriptions = nullptr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -68,56 +83,54 @@ void GraphicPipeline::init()
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
-    rasterizer.depthBiasConstantFactor = 0.0f; // Optional
-    rasterizer.depthBiasClamp = 0.0f; // Optional
-    rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
+    rasterizer.depthBiasConstantFactor = 0.0f;
+    rasterizer.depthBiasClamp = 0.0f;
+    rasterizer.depthBiasSlopeFactor = 0.0f;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    multisampling.minSampleShading = 1.0f; // Optional
-    multisampling.pSampleMask = nullptr; // Optional
-    multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
-    multisampling.alphaToOneEnable = VK_FALSE; // Optional
+    multisampling.minSampleShading = 1.0f;
+    multisampling.pSampleMask = nullptr;
+    multisampling.alphaToCoverageEnable = VK_FALSE;
+    multisampling.alphaToOneEnable = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
     VkPipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
+    colorBlending.logicOp = VK_LOGIC_OP_COPY;
     colorBlending.attachmentCount = 1;
     colorBlending.pAttachments = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = 0.0f; // Optional
-    colorBlending.blendConstants[1] = 0.0f; // Optional
-    colorBlending.blendConstants[2] = 0.0f; // Optional
-    colorBlending.blendConstants[3] = 0.0f; // Optional
+    colorBlending.blendConstants[0] = 0.0f;
+    colorBlending.blendConstants[1] = 0.0f;
+    colorBlending.blendConstants[2] = 0.0f;
+    colorBlending.blendConstants[3] = 0.0f;
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
     VkResult result = vkCreatePipelineLayout(m_game->m_device->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Failed to create pipeline layout!");
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Failed to create pipeline layout!");
 
+    if (m_debugMode)
         VKINFO("Pipeline layout created");
-    }
 
     createRenderPass();
 
@@ -139,13 +152,11 @@ void GraphicPipeline::init()
     
     result = vkCreateGraphicsPipelines(m_game->m_device->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Failed to create graphics pipeline!");
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Failed to create graphics pipeline!");
 
-        VKINFO("Graphics pipeline created")
-    }
+    if (m_debugMode)
+        VKINFO("Graphics pipeline created");
 
     m_vertexShader->destroyShaderModule();
     m_fragmentShader->destroyShaderModule();
@@ -181,13 +192,11 @@ void GraphicPipeline::createRenderPass()
 
     VkResult result = vkCreateRenderPass(m_game->m_device->getDevice(), &renderPassInfo, nullptr, &m_renderPass);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Failed to create render pass!");
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Failed to create render pass!");
 
+    if (m_debugMode)
         VKINFO("Render pass created");
-    }
 }
 
 void GraphicPipeline::setVertexShader(Shader* vertexShader)
