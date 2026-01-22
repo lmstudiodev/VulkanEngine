@@ -12,6 +12,7 @@ class Surface;
 class SwapChain;
 class Shader;
 class GraphicPipeline;
+class Renderer;
 
 #define VKDEBUG(message){\
 std::cout << "[VULKAN ENGINE DEBUG] " << message << "\n";\

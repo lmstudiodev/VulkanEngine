@@ -2,6 +2,7 @@
 #include <Game/Game.h>
 #include <Core/Device.h>
 #include <Core/Surface.h>
+#include <Core/GraphicPipeline.h>
 
 SwapChain::SwapChain(Game* game, bool debugMode) : m_game(game), m_debugMode(debugMode)
 {
@@ -25,6 +26,16 @@ void SwapChain::cleanUp()
     for (auto imageView : m_swapChainImageViews) 
     {
         vkDestroyImageView(m_game->m_device->getDevice(), imageView, nullptr);
+    }
+
+    vkDestroySwapchainKHR(m_game->m_device->getDevice(), m_swapChain, nullptr);
+}
+
+void SwapChain::destroyFrameBuffer()
+{
+    for (auto framebuffer : m_swapChainFramebuffers)
+    {
+        vkDestroyFramebuffer(m_game->m_device->getDevice(), framebuffer, nullptr);
     }
 }
 
@@ -56,6 +67,47 @@ size_t SwapChain::getSize()
 VkImageView SwapChain::getImageView(size_t index)
 {
     return m_swapChainImageViews[index];
+}
+
+VkFramebuffer SwapChain::getFramBufferAtIndex(size_t index)
+{
+    return m_swapChainFramebuffers[index];
+}
+
+std::vector<VkFramebuffer> SwapChain::getFrameBufferList()
+{
+    return m_swapChainFramebuffers;
+}
+
+void SwapChain::createFrameBuffer()
+{
+    size_t swapChainSize = getSize();
+
+    m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
+
+    for (size_t i = 0; i < swapChainSize; i++)
+    {
+        VkImageView attachments[] = {
+            m_swapChainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = m_game->m_graphicPipeline->getRenderPass();
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = m_swapChainExtent.width;
+        framebufferInfo.height = m_swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        VkResult result = vkCreateFramebuffer(m_game->m_device->getDevice(), &framebufferInfo, nullptr, &m_swapChainFramebuffers[i]);
+
+        if (result != VK_SUCCESS)
+            VKERROR_AND_THROW("failed to create framebuffer!");
+
+        if (m_debugMode)
+            VKINFO("Frame buffer " << i << " created");
+    }
 }
 
 void SwapChain::createSwapChain()
@@ -95,8 +147,8 @@ void SwapChain::createSwapChain()
     else 
     {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0; // Optional
-        createInfo.pQueueFamilyIndices = nullptr; // Optional
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
     }
 
     createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
@@ -110,7 +162,8 @@ void SwapChain::createSwapChain()
     if (result != VK_SUCCESS)
         VKERROR_AND_THROW("Unable to create swap chain");
 
-    VKINFO("Swap Chain created");
+    if(m_debugMode)
+        VKINFO("Swap Chain created");
 
     vkGetSwapchainImagesKHR(m_game->m_device->getDevice(), m_swapChain, &imageCount, nullptr);
     m_swapChainImages.resize(imageCount);
@@ -146,7 +199,8 @@ void SwapChain::createImageViews()
         if (result != VK_SUCCESS)
             VKERROR_AND_THROW("Unable to create iamge view");
 
-        VKINFO("Image view " << i << " created");
+        if(m_debugMode)
+            VKINFO("Image view " << i << " created");
     }
 }
 

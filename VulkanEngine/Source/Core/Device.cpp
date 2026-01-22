@@ -14,6 +14,21 @@ Device::~Device()
         VKINFO("Device class released");
 }
 
+void Device::cleanUp()
+{
+    vkDestroyDevice(m_device, nullptr);
+}
+
+void Device::destroyCommandPool()
+{
+    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+}
+
+void Device::resetCommandBuffer()
+{
+    vkResetCommandBuffer(m_commandBuffer, 0);
+}
+
 VkPhysicalDevice Device::getPhysicalDevice()
 {
 	return m_physicalDevice;
@@ -34,6 +49,11 @@ VkQueue Device::getPresentationQueue()
     return m_presentQueue;
 }
 
+VkCommandBuffer Device::getCommandBuffer()
+{
+    return m_commandBuffer;
+}
+
 SwapChainSupportDetails Device::getSwapchainSupport()
 {
     return m_swapChainSupport;
@@ -51,8 +71,9 @@ void Device::pickPhysicalDevice(VkInstance& instance)
 
     if (deviceCount == 0)
         VKERROR_AND_THROW("Failed to find GPUs with Vulkan support!");
-
-    VKINFO("Found " << deviceCount << " GPUs with Vulkan support");
+    
+    if (m_debugMode)
+        VKINFO("Found " << deviceCount << " GPUs with Vulkan support");
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     VkResult result = vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
@@ -110,7 +131,8 @@ void Device::createLogicalDevice()
     if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS)
         VKERROR_AND_THROW("Failed to create logical device!");
 
-    VKINFO("Logical device created");
+    if (m_debugMode)
+        VKINFO("Logical device created");
 
     vkGetDeviceQueue(m_device, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, indices.presentFamily.value(), 0, &m_presentQueue);
@@ -139,9 +161,11 @@ bool Device::isDeviceSuitable(VkPhysicalDevice device)
 
         if (indices.isComplete() && extensionsSupported && swapChainAdequate)
         {
-            VKINFO("Found a suitable GPU!");
-
-            VKINFO('\t' << deviceProperties.deviceName);
+            if (m_debugMode)
+            {
+                VKINFO("Found a suitable GPU!");
+                VKINFO('\t' << deviceProperties.deviceName);
+            }
 
             return true;
         }
@@ -211,53 +235,71 @@ SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device)
 
     VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_game->m_surface->getSurface(), &details.capabilities);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Unable to get device surface capabilities");
-    }
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Unable to get device surface capabilities");
 
     uint32_t formatCount;
     result = vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_game->m_surface->getSurface(), &formatCount, nullptr);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Unable to get device surface format");
-    }
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Unable to get device surface format");
 
     if (formatCount != 0)
     {
         details.formats.resize(formatCount);
         result = vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_game->m_surface->getSurface(), &formatCount, details.formats.data());
 
-        if (m_debugMode)
-        {
-            if (result != VK_SUCCESS)
-                VKERROR_AND_THROW("Unable to get device surface format");
-        }
+        if (result != VK_SUCCESS)
+            VKERROR_AND_THROW("Unable to get device surface format");
     }
 
     uint32_t presentModeCount;
     vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_game->m_surface->getSurface(), &presentModeCount, nullptr);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Unable to get device surface presentation modes");
-    }
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Unable to get device surface presentation modes");
 
     if (presentModeCount != 0)
     {
         details.presentModes.resize(presentModeCount);
         vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_game->m_surface->getSurface(), &presentModeCount, details.presentModes.data());
 
-        if (m_debugMode)
-        {
-            if (result != VK_SUCCESS)
-                VKERROR_AND_THROW("Unable to get device surface presentation modes");
-        }
+        if (result != VK_SUCCESS)
+            VKERROR_AND_THROW("Unable to get device surface presentation modes");
     }
 
     return details;
+}
+
+void Device::createCommandPool()
+{
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = m_queueFamilyIndices.graphicsFamily.value();
+
+    VkResult result = vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool);
+
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Failed to create command pool!");
+
+    if (m_debugMode)
+        VKINFO("Command pool created");
+}
+
+void Device::createCommandBuffer()
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = m_commandPool;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandBufferCount = 1;
+
+    VkResult result = vkAllocateCommandBuffers(m_device, &allocInfo, &m_commandBuffer);
+
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("failed to allocate command buffers!");
+
+    if (m_debugMode)
+        VKINFO("Command buffer created");
 }

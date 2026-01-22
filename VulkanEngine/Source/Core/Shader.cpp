@@ -36,13 +36,11 @@ void Shader::createShaderModule(const std::vector<char>& code)
 
     VkResult result = vkCreateShaderModule(m_game->m_device->getDevice(), &createInfo, nullptr, &m_shaderModule);
 
-    if (m_debugMode)
-    {
-        if (result != VK_SUCCESS)
-            VKERROR_AND_THROW("Failed to create shader module!");
+    if (result != VK_SUCCESS)
+        VKERROR_AND_THROW("Failed to create shader module!");
 
+    if (m_debugMode)
         VKINFO("Shader module created");
-    }
 }
 
 std::vector<char> Shader::readFile(const std::string& filename)
@@ -50,10 +48,7 @@ std::vector<char> Shader::readFile(const std::string& filename)
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open())
-    {
-        if(m_debugMode)
-            VKERROR_AND_THROW("Unable to open shader file: " << filename);
-    }
+        VKERROR_AND_THROW("Unable to open shader file: " << filename);
         
     if (m_debugMode)
         VKINFO("Shader file " << filename << " loaded");

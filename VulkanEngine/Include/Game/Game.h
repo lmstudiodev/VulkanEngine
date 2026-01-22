@@ -44,22 +44,12 @@ private:
     bool checkForSupportedExtensions(std::vector<const char*>& extensions) const;
     bool checkForSupportedLayers(std::vector<const char*>& layers) const;
 
-    void createGraphicsPipeline();
-    void createFramebuffers();
-    void createCommandPool();
-    void createCommandBuffer();
-    void createSyncObjects();
-
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
     void drawFrame();
 
 private:
     GLFWwindow* m_window;
     VkInstance m_vkInstance;
     VkDebugUtilsMessengerEXT m_debugMessenger;
-    VkCommandPool m_commandPool;
-    VkCommandBuffer m_commandBuffer;
 
     const uint32_t WIDTH = 1920;
     const uint32_t HEIGHT = 1080;
@@ -71,12 +61,7 @@ private:
     std::shared_ptr<Shader> m_vertexShader;
     std::shared_ptr<Shader> m_fragmentShader;
     std::shared_ptr<GraphicPipeline> m_graphicPipeline;
-
-    std::vector<VkFramebuffer> m_swapChainFramebuffers;
-
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
-    VkFence m_inFlightFence;
+    std::shared_ptr<Renderer> m_renderer;
 
 private:
     friend class Device;
@@ -84,6 +69,7 @@ private:
     friend class SwapChain;
     friend class Shader;
     friend class GraphicPipeline;
+    friend class Renderer;
 
 #ifndef NDEBUG
     bool m_debugMode = true;
