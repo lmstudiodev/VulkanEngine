@@ -33,8 +33,8 @@ void GraphicPipeline::init()
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = m_game->m_swapChain->getWidth();
-    viewport.height = m_game->m_swapChain->getHeight();
+    viewport.width = static_cast<float>(m_game->m_swapChain->getWidth());
+    viewport.height = static_cast<float>(m_game->m_swapChain->getHeight());
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 

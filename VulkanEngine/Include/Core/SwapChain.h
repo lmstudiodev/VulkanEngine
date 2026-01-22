@@ -11,8 +11,8 @@ public:
 public:
 	VkSwapchainKHR getSwapChain();
 	void cleanUp();
-	float getWidth();
-	float getHeight();
+	uint32_t getWidth();
+	uint32_t getHeight();
 	VkExtent2D& getExtent();
 	VkFormat& getFormat();
 	size_t getSize();

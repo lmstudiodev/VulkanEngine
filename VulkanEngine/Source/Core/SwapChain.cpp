@@ -28,14 +28,14 @@ void SwapChain::cleanUp()
     }
 }
 
-float SwapChain::getWidth()
+uint32_t SwapChain::getWidth()
 {
-    return (float)m_swapChainExtent.width;
+    return m_swapChainExtent.width;
 }
 
-float SwapChain::getHeight()
+uint32_t SwapChain::getHeight()
 {
-    return (float)m_swapChainExtent.height;
+    return m_swapChainExtent.height;
 }
 
 VkExtent2D& SwapChain::getExtent()
