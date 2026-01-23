@@ -78,24 +78,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="VulkanEngine\Source\Core\Renderer.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Core\GraphicPipeline.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Core\Shader.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Core\SwapChain.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Core\Surface.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Core\Device.cpp" />
-    <ClCompile Include="VulkanEngine\Source\Game\Game.cpp" />
+    <ClCompile Include="VulkanEngine\Source\Core\LMVSwapChain.cpp" />
+    <ClCompile Include="VulkanEngine\Source\Core\LMVDevice.cpp" />
+    <ClCompile Include="VulkanEngine\Source\Core\LMVPipeline.cpp" />
+    <ClCompile Include="VulkanEngine\Source\Game\MainApp.cpp" />
+    <ClCompile Include="VulkanEngine\Source\Window\LMVWindow.cpp" />
     <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="VulkanEngine\Include\Core\Renderer.h" />
-    <ClInclude Include="VulkanEngine\Include\Core\GraphicPipeline.h" />
-    <ClInclude Include="VulkanEngine\Include\Core\Shader.h" />
-    <ClInclude Include="VulkanEngine\Include\Core\SwapChain.h" />
-    <ClInclude Include="VulkanEngine\Include\Core\Surface.h" />
-    <ClInclude Include="VulkanEngine\Include\Core\Device.h" />
-    <ClInclude Include="VulkanEngine\Include\Game\Game.h" />
-    <ClInclude Include="VulkanEngine\Include\Prerequisite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\shader.frag">
@@ -106,6 +94,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="VulkanEngine\Include\Core\LMVSwapChain.h" />
+    <ClInclude Include="VulkanEngine\Include\Core\LMVDevice.h" />
+    <ClInclude Include="VulkanEngine\Include\Core\LMVPipeline.h" />
+    <ClInclude Include="VulkanEngine\Include\Game\MainApp.h" />
+    <ClInclude Include="VulkanEngine\Include\Window\LMVWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
