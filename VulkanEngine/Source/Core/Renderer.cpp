@@ -16,30 +16,33 @@ Renderer::~Renderer()
 
 void Renderer::cleanUp()
 {
-    vkDestroySemaphore(m_game->m_device->getDevice(), m_imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(m_game->m_device->getDevice(), m_renderFinishedSemaphore, nullptr);
-    vkDestroyFence(m_game->m_device->getDevice(), m_inFlightFence, nullptr);
+    for (size_t i = 0; i < m_game->m_swapChain->getSize(); i++)
+    {
+        vkDestroySemaphore(m_game->m_device->getDevice(), m_imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(m_game->m_device->getDevice(), m_renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(m_game->m_device->getDevice(), m_inFlightFences[i], nullptr);
+    }
 }
 
 void Renderer::render()
 {
-    vkWaitForFences(m_game->m_device->getDevice(), 1, &m_inFlightFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(m_game->m_device->getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
-    vkResetFences(m_game->m_device->getDevice(), 1, &m_inFlightFence);
+    vkResetFences(m_game->m_device->getDevice(), 1, &m_inFlightFences[m_currentFrame]);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(m_game->m_device->getDevice(), m_game->m_swapChain->getSwapChain(), UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(m_game->m_device->getDevice(), m_game->m_swapChain->getSwapChain(), UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    m_game->m_device->resetCommandBuffer();
+    m_game->m_device->resetCommandBuffer(m_currentFrame);
 
-    recordCommandBuffer(m_game->m_device->getCommandBuffer(), imageIndex);
+    recordCommandBuffer(m_game->m_device->getCommandBuffer(m_currentFrame), imageIndex);
 
-    VkCommandBuffer cmdBuffer = m_game->m_device->getCommandBuffer();
+    VkCommandBuffer cmdBuffer = m_game->m_device->getCommandBuffer(m_currentFrame);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphore };
+    VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphores[m_currentFrame]};
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -47,11 +50,11 @@ void Renderer::render()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuffer;
 
-    VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphore };
+    VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    VkResult result = vkQueueSubmit(m_game->m_device->getGraphicQueue(), 1, &submitInfo, m_inFlightFence);
+    VkResult result = vkQueueSubmit(m_game->m_device->getGraphicQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
 
     if (result != VK_SUCCESS)
         VKERROR_AND_THROW("failed to submit draw command buffer!");
@@ -69,10 +72,16 @@ void Renderer::render()
     presentInfo.pImageIndices = &imageIndex;
 
     vkQueuePresentKHR(m_game->m_device->getPresentationQueue(), &presentInfo);
+
+    m_currentFrame = (m_currentFrame + 1) % m_game->m_swapChain->getSize();
 }
 
 void Renderer::createSyncObjects()
 {
+    m_imageAvailableSemaphores.resize(m_game->m_swapChain->getSize());
+    m_renderFinishedSemaphores.resize(m_game->m_swapChain->getSize());
+    m_inFlightFences.resize(m_game->m_swapChain->getSize());
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -80,16 +89,19 @@ void Renderer::createSyncObjects()
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    if (vkCreateSemaphore(m_game->m_device->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_game->m_device->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS ||
-        vkCreateFence(m_game->m_device->getDevice(), &fenceInfo, nullptr, &m_inFlightFence) != VK_SUCCESS)
+    for (size_t i = 0; i < m_game->m_swapChain->getSize(); i++)
     {
-        VKERROR_AND_THROW("failed to create semaphores!");
-    }
+        if (vkCreateSemaphore(m_game->m_device->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(m_game->m_device->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(m_game->m_device->getDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        {
+            VKERROR_AND_THROW("failed to create semaphores!");
+        }
 
-    if (m_debugMode)
-    {
-        VKINFO("Semaphores created");
+        if (m_debugMode)
+        {
+            VKINFO("Semaphores created");
+        }
     }
 }
 

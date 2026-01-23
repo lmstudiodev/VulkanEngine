@@ -19,14 +19,16 @@ public:
 	VkDevice getDevice();
 	VkQueue getGraphicQueue();
 	VkQueue getPresentationQueue();
-	VkCommandBuffer getCommandBuffer();
+	std::vector<VkCommandBuffer> getAllCommandBuffers();
+	VkCommandBuffer getCommandBuffer(size_t index);
 	SwapChainSupportDetails getSwapchainSupport();
 	QueueFamilyIndices getQueueFamilyIndices();
 	void createCommandPool();
 	void createCommandBuffer();
 	void cleanUp();
 	void destroyCommandPool();
-	void resetCommandBuffer();
+	void resetAllCommandBuffers();
+	void resetCommandBuffer(size_t index);
 
 private:
 	void pickPhysicalDevice(VkInstance& instance);
@@ -45,7 +47,7 @@ private:
 	QueueFamilyIndices m_queueFamilyIndices;
 	SwapChainSupportDetails m_swapChainSupport;
 	VkCommandPool m_commandPool;
-	VkCommandBuffer m_commandBuffer;
+	std::vector<VkCommandBuffer> m_commandBuffers;
 
 	Game* m_game = nullptr;
 

@@ -1,5 +1,6 @@
 #include <Core/Device.h>
 #include <Core/Surface.h>
+#include <Core/SwapChain.h>
 #include <Game/Game.h>
 
 Device::Device(Game* game, bool debugMode) : m_game(game), m_debugMode(debugMode)
@@ -24,9 +25,17 @@ void Device::destroyCommandPool()
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 }
 
-void Device::resetCommandBuffer()
+void Device::resetAllCommandBuffers()
 {
-    vkResetCommandBuffer(m_commandBuffer, 0);
+    for (auto cb : m_commandBuffers)
+    {
+        vkResetCommandBuffer(cb, 0);
+    }
+}
+
+void Device::resetCommandBuffer(size_t index)
+{
+    vkResetCommandBuffer(m_commandBuffers[index], 0);
 }
 
 VkPhysicalDevice Device::getPhysicalDevice()
@@ -49,9 +58,14 @@ VkQueue Device::getPresentationQueue()
     return m_presentQueue;
 }
 
-VkCommandBuffer Device::getCommandBuffer()
+std::vector<VkCommandBuffer> Device::getAllCommandBuffers()
 {
-    return m_commandBuffer;
+    return m_commandBuffers;
+}
+
+VkCommandBuffer Device::getCommandBuffer(size_t index)
+{
+    return m_commandBuffers[index];
 }
 
 SwapChainSupportDetails Device::getSwapchainSupport()
@@ -289,13 +303,15 @@ void Device::createCommandPool()
 
 void Device::createCommandBuffer()
 {
+    m_commandBuffers.resize(m_game->m_swapChain->getSize());
+    
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = m_commandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
+    allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
 
-    VkResult result = vkAllocateCommandBuffers(m_device, &allocInfo, &m_commandBuffer);
+    VkResult result = vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data());
 
     if (result != VK_SUCCESS)
         VKERROR_AND_THROW("failed to allocate command buffers!");

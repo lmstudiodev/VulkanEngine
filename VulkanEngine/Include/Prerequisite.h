@@ -6,7 +6,6 @@
 #include <limits>
 #include <algorithm>
 
-
 class Device;
 class Surface;
 class SwapChain;
