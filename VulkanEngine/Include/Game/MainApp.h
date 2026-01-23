@@ -3,6 +3,7 @@
 #include <Core/LMVPipeline.h>
 #include <Core/LMVDevice.h>
 #include <Core/LMVSwapChain.h>
+#include <Core/LMVModel.h>
 
 #include <memory>
 #include <vector>
@@ -20,6 +21,7 @@ public:
 	void run();
 
 private:
+	void loadModels();
 	void createPipelineLayout();
 	void createPipeline();
 	void createCommandBuffers();
@@ -35,6 +37,7 @@ private:
 	LMVSwapChain m_swapchain{m_device, m_window.getExtent()};
 
 	std::unique_ptr<LMVPipeline> m_pipeline;
+	std::unique_ptr<LMVModel> m_model;
 
 	VkPipelineLayout m_pipelineLayout;
 

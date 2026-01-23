@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="VulkanEngine\Source\Core\LMVModel.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\LMVSwapChain.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\LMVDevice.cpp" />
     <ClCompile Include="VulkanEngine\Source\Core\LMVPipeline.cpp" />
@@ -96,6 +97,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="VulkanEngine\Include\Core\LMVModel.h" />
     <ClInclude Include="VulkanEngine\Include\Core\LMVSwapChain.h" />
     <ClInclude Include="VulkanEngine\Include\Core\LMVDevice.h" />
     <ClInclude Include="VulkanEngine\Include\Core\LMVPipeline.h" />

@@ -5,6 +5,7 @@
 
 MainApp::MainApp()
 {
+	loadModels();
 	createPipelineLayout();
 	createPipeline();
 	createCommandBuffers();
@@ -13,6 +14,17 @@ MainApp::MainApp()
 MainApp::~MainApp()
 {
 	vkDestroyPipelineLayout(m_device.device(), m_pipelineLayout, nullptr);
+}
+
+void MainApp::loadModels()
+{
+	std::vector<LMVModel::Vertex> vertices{
+		{{0.0, -0.5}},
+		{{0.5, 0.5}},
+		{{-0.5, 0.5}}
+	};
+
+	m_model = std::make_unique<LMVModel>(m_device, vertices);
 }
 
 void MainApp::createPipelineLayout()
@@ -83,8 +95,8 @@ void MainApp::createCommandBuffers()
 		vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		m_pipeline->bind(m_commandBuffers[i]);
-
-		vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+		m_model->bind(m_commandBuffers[i]);
+		m_model->draw(m_commandBuffers[i]);
 
 		vkCmdEndRenderPass(m_commandBuffers[i]);
 
