@@ -1,16 +1,19 @@
-#include <Prerequisite.h>
-
-#include <Game/Game.h>
+#include <Game/MainApp.h>
+#include <cstdlib>
+#include <iostream>
+#include <stdexcept>
 
 int main() {
+
     try 
     {
-        Game game;
+        MainApp game;
         
         game.run();
     }
-    catch (...) 
+    catch (const std::exception &e) 
     {
+        std::cerr << e.what() << '\n';
         return EXIT_FAILURE;
     }
 
