@@ -17,12 +17,14 @@ private:
     void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 private:
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
-    VkFence m_inFlightFence;
+    std::vector<VkSemaphore> m_imageAvailableSemaphores;
+    std::vector<VkSemaphore> m_renderFinishedSemaphores;
+    std::vector<VkFence> m_inFlightFences;
 
     Game* m_game = nullptr;
 
     bool m_debugMode;
+
+    uint32_t m_currentFrame = 0;
 };
 
