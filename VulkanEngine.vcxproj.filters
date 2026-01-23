@@ -33,6 +33,9 @@
     <ClCompile Include="VulkanEngine\Source\Core\LMVSwapChain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanEngine\Source\Core\LMVModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\shader.vert" />
@@ -52,6 +55,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanEngine\Include\Core\LMVSwapChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanEngine\Include\Core\LMVModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
