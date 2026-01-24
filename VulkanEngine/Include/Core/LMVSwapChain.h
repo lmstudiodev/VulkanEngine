@@ -1,6 +1,7 @@
 #pragma once
 #include <Core/LMVDevice.h>
 #include <vulkan/vulkan.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,11 +11,13 @@ public:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 public:
+	LMVSwapChain() = default;
 	LMVSwapChain(LMVDevice& deviceRef, VkExtent2D windowExtent);
+	LMVSwapChain(LMVDevice& deviceRef, VkExtent2D windowExtent, std::shared_ptr<LMVSwapChain> previous);
 	~LMVSwapChain();
 
 	LMVSwapChain(const LMVSwapChain&) = delete;
-	void operator=(const LMVSwapChain&) = delete;
+	LMVSwapChain& operator=(const LMVSwapChain&) = delete;
 
 public:
 	VkFramebuffer getFrameBuffer(int index) { return m_swapChainFramebuffers[index]; }
@@ -33,6 +36,7 @@ public:
 	VkResult submitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
 
 private:
+	void init();
 	void createSwapChain();
 	void createImageViews();
 	void createDepthResources();
@@ -67,5 +71,7 @@ private:
 	std::vector<VkFence> m_inFlightFences;
 	std::vector<VkFence> m_imagesInFlight;
 	size_t m_currentFrame = 0;
+
+	std::shared_ptr<LMVSwapChain> m_oldSwapchain;
 };
 

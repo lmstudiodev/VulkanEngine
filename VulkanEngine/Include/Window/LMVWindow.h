@@ -14,6 +14,8 @@ public:
 
 public:
 	inline bool shouldClose() { return glfwWindowShouldClose(m_window); }
+	bool wasWindowResized() { return m_frameBufferResized; }
+	void resetWindowResizedFlag() { m_frameBufferResized = false; }
 
 	VkExtent2D getExtent() { return { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) }; }
 
@@ -22,11 +24,15 @@ public:
 private:
 	void initWindow();
 
+	static void frameBufferResizeCallback(GLFWwindow* window, int width, int height);
+
 private:
 	GLFWwindow* m_window;
 
-	const int m_width;
-	const int m_height;
+	int m_width;
+	int m_height;
+
+	bool m_frameBufferResized = false;
 
 	std::string m_windowName;
 };

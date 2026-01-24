@@ -26,7 +26,19 @@ void LMVWindow::initWindow()
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), nullptr, nullptr);
+
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetFramebufferSizeCallback(m_window, frameBufferResizeCallback);
+}
+
+void LMVWindow::frameBufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto classWindow = reinterpret_cast<LMVWindow*>(glfwGetWindowUserPointer(window));
+
+    classWindow->m_frameBufferResized = true;
+    classWindow->m_width = width;
+    classWindow->m_height = height;
 }

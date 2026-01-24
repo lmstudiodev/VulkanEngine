@@ -18,23 +18,17 @@ LMVPipeline::~LMVPipeline()
 	vkDestroyPipeline(m_device.device(), m_graphicsPipeline, nullptr);
 }
 
-PipelineConfigInfo LMVPipeline::defaultPipelineConfiInfo(uint32_t width, uint32_t height)
+void LMVPipeline::defaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 {
-	PipelineConfigInfo configInfo{};
-
 	configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-	configInfo.viewport.x = 0.0f;
-	configInfo.viewport.y = 0.0f;
-	configInfo.viewport.width = static_cast<float>(width);
-	configInfo.viewport.height = static_cast<float>(height);
-	configInfo.viewport.minDepth = 0.0f;
-	configInfo.viewport.maxDepth = 1.0f;
-
-	configInfo.scissor.offset = { 0, 0 };
-	configInfo.scissor.extent = { width, height };
+	configInfo.viewPortInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	configInfo.viewPortInfo.viewportCount = 1;
+	configInfo.viewPortInfo.pViewports = nullptr;
+	configInfo.viewPortInfo.scissorCount = 1;
+	configInfo.viewPortInfo.pScissors = nullptr;
 
 	configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;
@@ -85,8 +79,13 @@ PipelineConfigInfo LMVPipeline::defaultPipelineConfiInfo(uint32_t width, uint32_
 	configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
 	configInfo.depthStencilInfo.front = {};
 	configInfo.depthStencilInfo.back = {};
-	
-	return configInfo;
+
+	configInfo.dynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+	configInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
+	configInfo.dynamicStateInfo.dynamicStateCount =
+		static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
+	configInfo.dynamicStateInfo.flags = 0;
 }
 
 void LMVPipeline::bind(VkCommandBuffer commandBuffer)
@@ -123,9 +122,6 @@ void LMVPipeline::createGraphicsPipeline(const std::string& vertexShaderPath, co
 	auto vertexCode = readFile(vertexShaderPath);
 	auto fragmentCode = readFile(pixelShaderPath);
 
-	std::cout << "Vertex Shader Code size: " << vertexCode.size() << "\n";
-	std::cout << "Fragment Shader Code size: " << fragmentCode.size() << "\n";
-
 	createShaderModule(vertexCode, &m_vertexShaderModule);
 	createShaderModule(fragmentCode, &m_fragmentShaderModule);
 
@@ -156,25 +152,18 @@ void LMVPipeline::createGraphicsPipeline(const std::string& vertexShaderPath, co
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
 	vertexInputInfo.pVertexBindingDescriptions = bindingDescription.data();
 
-	VkPipelineViewportStateCreateInfo viewportInfo{};
-	viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportInfo.viewportCount = 1;
-	viewportInfo.pViewports = &config.viewport;
-	viewportInfo.scissorCount = 1;
-	viewportInfo.pScissors = &config.scissor;
-
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipelineInfo.stageCount = 2;
 	pipelineInfo.pStages = shaderStages;
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
 	pipelineInfo.pInputAssemblyState = &config.inputAssemblyInfo;
-	pipelineInfo.pViewportState = &viewportInfo;
+	pipelineInfo.pViewportState = &config.viewPortInfo;
 	pipelineInfo.pRasterizationState = &config.rasterizationInfo;
 	pipelineInfo.pMultisampleState = &config.multisampleInfo;
 	pipelineInfo.pColorBlendState = &config.colorBlendInfo;
 	pipelineInfo.pDepthStencilState = &config.depthStencilInfo;
-	pipelineInfo.pDynamicState = nullptr;
+	pipelineInfo.pDynamicState = &config.dynamicStateInfo;
 
 	pipelineInfo.layout = config.pipelineLayout;
 	pipelineInfo.renderPass = config.renderPass;

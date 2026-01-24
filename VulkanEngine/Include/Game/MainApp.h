@@ -25,7 +25,10 @@ private:
 	void createPipelineLayout();
 	void createPipeline();
 	void createCommandBuffers();
+	void freeCommandBuffers();
 	void drawFrame();
+	void recreateSwapchain();
+	void recordCommandBuffer(int imageIndex);
 
 public:
 	static constexpr int WIDTH = 1920;
@@ -34,8 +37,7 @@ public:
 private:
 	LMVWindow m_window{WIDTH, HEIGHT, "LMV Vulkan Engine"};
 	LMVDevice m_device{m_window};
-	LMVSwapChain m_swapchain{m_device, m_window.getExtent()};
-
+	std::unique_ptr<LMVSwapChain> m_swapchain;
 	std::unique_ptr<LMVPipeline> m_pipeline;
 	std::unique_ptr<LMVModel> m_model;
 
@@ -43,4 +45,3 @@ private:
 
 	std::vector<VkCommandBuffer> m_commandBuffers;
 };
-

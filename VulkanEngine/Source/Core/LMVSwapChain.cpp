@@ -7,7 +7,19 @@
 #include <set>
 #include <stdexcept>
 
-LMVSwapChain::LMVSwapChain(LMVDevice& deviceRef, VkExtent2D extent) : m_device{ deviceRef }, m_windowExtent{ extent }
+LMVSwapChain::LMVSwapChain(LMVDevice& deviceRef, VkExtent2D windowExtent) : m_device{ deviceRef }, m_windowExtent{ windowExtent }
+{
+    init();
+}
+
+LMVSwapChain::LMVSwapChain(LMVDevice& deviceRef, VkExtent2D windowExtent, std::shared_ptr<LMVSwapChain> previous) : m_device{ deviceRef }, m_windowExtent{ windowExtent }, m_oldSwapchain(previous)
+{
+    init();
+
+    m_oldSwapchain = nullptr;
+}
+
+void LMVSwapChain::init()
 {
     createSwapChain();
     createImageViews();
@@ -114,7 +126,7 @@ VkResult LMVSwapChain::submitCommandBuffers( const VkCommandBuffer* buffers, uin
     return result;
 }
 
-void LMVSwapChain::createSwapChain() 
+void LMVSwapChain::createSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = m_device.getSwapChainSupport();
 
@@ -163,7 +175,7 @@ void LMVSwapChain::createSwapChain()
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = m_oldSwapchain == nullptr ? VK_NULL_HANDLE : m_oldSwapchain->m_swapChain;
 
     if (vkCreateSwapchainKHR(m_device.device(), &createInfo, nullptr, &m_swapChain) != VK_SUCCESS)
     {
@@ -393,7 +405,6 @@ VkPresentModeKHR LMVSwapChain::chooseSwapPresentMode(const std::vector<VkPresent
     //   }
     // }
 
-    std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
