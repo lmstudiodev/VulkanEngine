@@ -18,13 +18,22 @@ MainApp::~MainApp()
 
 void MainApp::loadModels()
 {
-	std::vector<LMVModel::Vertex> vertices{
-		{{0.0, -0.5}},
-		{{0.5, 0.5}},
-		{{-0.5, 0.5}}
+	std::vector<LMVModel::Vertex> triangle_vertices{
+		{{0.0, -0.5}, {1.0, 0, 0}},
+		{{0.5, 0.5}, {0, 1.0, 0}},
+		{{-0.5, 0.5}, {0, 0, 1.0}}
 	};
 
-	m_model = std::make_unique<LMVModel>(m_device, vertices);
+	std::vector<LMVModel::Vertex> quad_vertices{
+	{{-0.5, -0.5}, {1.0, 0, 0}},
+	{{-0.5, 0.5}, {0, 1.0, 0}},
+	{{0.5, 0.5}, {0, 0, 1.0}},
+	{{-0.5, -0.5}, {1.0, 0, 0}},
+	{{0.5, 0.5}, {0, 0, 1.0}},
+	{{0.5, -0.5}, {1.0, 1.0, 0}}
+	};
+
+	m_model = std::make_unique<LMVModel>(m_device, triangle_vertices);
 }
 
 void MainApp::createPipelineLayout()
